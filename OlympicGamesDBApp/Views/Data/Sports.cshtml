@@ -1,0 +1,156 @@
+﻿@section Scripts
+{
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+
+    <link href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.1.1/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+}
+<div>
+    <a class="btn btn-success" href="#AddRecordLink" rel="modal:open">Добавить запись</a>
+</div>
+
+<div style="display:none;">
+    <a id="ModalFormLink" href="#UpdateRecordLink" rel="modal:open">Обновить</a>
+</div>
+
+<form asp-controller="Edit" asp-action="AddSport" id="AddRecordLink" style="display:none;">
+    <p><label>Name</label><input name="sportName" type="text" /></p>
+    <p><label>IsIndividual</label><input name="isIndividual" type="number" /></p>
+    <p><input type="submit" value="Добавить" /></p>
+</form>
+
+<form asp-controller="Edit" asp-action="UpdateSport" id="UpdateRecordLink" style="display:none;">
+    <input name="id" type="hidden" />
+    <p><label>Name</label><input name="sportName" type="text" /></p>
+    <p><label>IsIndividual</label><input name="isIndividual" type="number" /></p>
+    <p><input type="submit" value="Обновить" /></p>
+</form>
+
+<br />
+<div style="width:90%; margin:0 auto;">
+    <table id="Sports" class="table table-striped table-bordered dt-responsive nowrap" width="100%" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>IsIndividual</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>IsIndividual</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+        var oTable;
+    var customParams = {
+            "initComplete": function () {
+                // Apply the search
+                this.api().columns().every(function () {
+                    var that = this;
+                    $('input', this.footer()).off('keyup change clear');
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that
+                                .search(this.value)
+                                .draw();
+                        }
+                    });
+                });
+            },
+            "processing": true, // for show progress bar
+            "serverSide": true, // for process server side
+            "filter": true, // this is for disable filter (search box)
+            "orderMulti": false, // for disable multiple column at once
+            "ajax": {
+                "url": "/Data/LoadSportsTable",
+                "type": "POST",
+                "datatype": "json"
+            },
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/725b2a2115b/i18n/Russian.json"
+            },
+            "columns": [
+                { "data": "Id", "name": "Id", "autoWidth": true },
+                { "data": "Name", "name": "Name", "title": "Страна", "autoWidth": true },
+                { "data": "IsIndividual", "name": "IsIndividual", "title": "Вид спорта", "autoWidth": true },
+                {
+                    "data" : null,
+                    "render": function (data, type, full, meta) {
+                        return `<a class='btn btn-info' href='#' onclick=\"EditData(${full.Id}, '${full.Name}', ${full.IsIndividual})\"; >Update</a>`;
+                    },
+                    "title" : "Изменение"
+                },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return "<a href='#' class='btn btn-danger' onclick=DeleteData('" + row.Id + "'); >Delete</a>";
+                    },
+                    "title" : "Удаление"
+                },
+            ]
+
+        };
+        $(document).ready(function () {
+            $('#Sports tfoot th').each(function () {
+                var title = $(this).text();
+                if (title != 'Edit' && title != 'Delete') {
+                    $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+                }
+            });
+
+            oTable = $("#Sports").DataTable(customParams);
+
+        });
+
+
+        function DeleteData(AthleteId) {
+            if (confirm("Подтвердите действие")) {
+                Delete(AthleteId);
+            } else {
+                return false;
+            }
+        }
+
+
+        function Delete(AthleteId) {
+            var url = '@Url.Content("~/")' + "Edit/DeleteSport";
+
+            $.post(url, { sportId: AthleteId }, function (data) {
+                ReloadCatalog();
+                });
+        }
+
+
+        function ReloadCatalog() {
+            let newurl = "/data/LoadSportsTable";
+            oTable.ajax.url(newurl).load();
+
+        }
+
+    function EditData(Id, Name, IsIndividual) {
+        let form = document.querySelector("#UpdateRecordLink");
+        form.id.value = Id;
+        form.sportName.value = Name;
+        form.isIndividual.value = IsIndividual;
+        let link = $('#ModalFormLink');
+        link.click();
+    }
+
+</script>
+

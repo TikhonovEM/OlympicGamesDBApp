@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Главная страница";
+}
+
+@section Scripts
+{
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+
+    <link href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.1.1/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+}
+
+<form id="Report3" asp-controller="Data" asp-action="Report3" style="display:none;">
+    <p><label>Дата</label><input name="date" type="date" /></p>
+    <p><input type="submit" value="Сгенерировать" /></p>
+</form>
+
+
+<div class="container">
+    <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+        <ul class="nav navbar-nav list-group-horizontal">
+            <li class="list-group-item btn-outline-light">
+                <a class="btn btn-success" asp-controller="Data" asp-action="Report1">Отчет 1</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a class="btn btn-success" asp-controller="Data" asp-action="Report2">Отчет 2</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a class="btn btn-success" href="#Report3" rel="modal:open">Отчет 3</a>
+            </li>
+        </ul>
+    </div>
+
+    <div>
+        <ul class="list-group">
+            <li class="list-group-item btn-outline-light">
+                <a asp-controller="Data" asp-action="Athletes">Спортсмены</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a asp-controller="Data" asp-action="Countries">Страны</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a asp-controller="Data" asp-action="Results">Результаты</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a asp-controller="Data" asp-action="Schedules">Расписание стартов</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a asp-controller="Data" asp-action="Sportgrounds">Спортивные площадки</a>
+            </li>
+            <li class="list-group-item btn-outline-light">
+                <a asp-controller="Data" asp-action="Sports">Виды спорта</a>
+            </li>
+        </ul>
+    </div>
+
+
+</div>

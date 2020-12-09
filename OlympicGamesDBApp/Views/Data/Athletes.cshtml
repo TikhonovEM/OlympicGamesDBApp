@@ -1,0 +1,176 @@
+﻿@section Scripts
+{
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+
+    <link href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.1.1/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+}
+<div>
+    <a class="btn btn-success" href="#AddRecordLink" rel="modal:open">Добавить запись</a>
+</div>
+
+<div style="display:none;">
+    <a id="ModalFormLink" href="#UpdateRecordLink" rel="modal:open">Обновить</a>
+</div>
+
+<form asp-controller="Edit" asp-action="AddAthlete" id="AddRecordLink" style="display:none;">
+    <p><label>CountryId</label><input name="countryId" type="number" /></p>
+    <p><label>SportId</label><input name="sportId" type="number" /></p>
+    <p><label>FullName</label><input name="fullName" type="text" /></p>
+    <p><label>BirthDate</label><input name="birthDate" type="date" /></p>
+    <p><input type="submit" value="Добавить" /></p>
+</form>
+
+<form asp-controller="Edit" asp-action="UpdateAthlete" id="UpdateRecordLink" style="display:none;">
+    <input name="id" type="hidden" />
+    <p><label>CountryId</label><input name="countryId" type="number" /></p>
+    <p><label>SportId</label><input name="sportId" type="number" /></p>
+    <p><label>FullName</label><input name="fullName" type="text" /></p>
+    <p><label>BirthDate</label><input name="birthDate" type="date" /></p>
+    <p><input type="submit" value="Обновить" /></p>
+</form>
+
+<br />
+<div style="width:90%; margin:0 auto;">
+    <table id="Athletes" class="table table-striped table-bordered dt-responsive nowrap" width="100%" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>CountryId</th>
+                <th>SportId</th>
+                <th>FullName</th>
+                <th>BirthDate</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Id</th>
+                <th>CountryId</th>
+                <th>SportId</th>
+                <th>FullName</th>
+                <th>BirthDate</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+        var oTable;
+    var customParams = {
+            "initComplete": function () {
+                // Apply the search
+                this.api().columns().every(function () {
+                    var that = this;
+                    $('input', this.footer()).off('keyup change clear');
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that
+                                .search(this.value)
+                                .draw();
+                        }
+                    });
+                });
+            },
+            "processing": true, // for show progress bar
+            "serverSide": true, // for process server side
+            "filter": true, // this is for disable filter (search box)
+            "orderMulti": false, // for disable multiple column at once
+            "ajax": {
+                "url": "/Data/LoadAthletesTable",
+                "type": "POST",
+                "datatype": "json"
+            },
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/725b2a2115b/i18n/Russian.json"
+            },
+            "columnDefs": [
+                {
+                    "targets": 4,
+                    "render": function (data) {
+                        return moment(data).format('DD.MM.YYYY');
+                    }
+                }],
+            "columns": [
+                { "data": "Id", "name": "Id", "autoWidth": true },
+                { "data": "CountryId", "name": "CountryId", "title": "Страна", "autoWidth": true },
+                { "data": "SportId", "name": "SportId", "title": "Вид спорта", "autoWidth": true },
+                { "data": "FullName", "name": "FullName", "title": "Имя", "autoWidth": true },
+                { "data": "BirthDate", "name": "BirthDate", "title": "Дата рождения", "autoWidth": true, },
+                {
+                    "data" : null,
+                    "render": function (data, type, full, meta) {
+                        return `<a class='btn btn-info' href='#' onclick=\"EditData(${full.Id}, ${full.CountryId}, ${full.SportId}, '${full.FullName}', '${full.BirthDate}')\"; >Update</a>`;
+                    },
+                    "title" : "Изменение"
+                },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return "<a href='#' class='btn btn-danger' onclick=DeleteData('" + row.Id + "'); >Delete</a>";
+                    },
+                    "title" : "Удаление"
+                },
+            ]
+
+        };
+        $(document).ready(function () {
+            $('#Athletes tfoot th').each(function () {
+                var title = $(this).text();
+                if (title != 'Edit' && title != 'Delete') {
+                    $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+                }
+            });
+
+            oTable = $("#Athletes").DataTable(customParams);
+
+        });
+
+
+        function DeleteData(AthleteId) {
+            if (confirm("Подтвердите действие")) {
+                Delete(AthleteId);
+            } else {
+                return false;
+            }
+        }
+
+
+        function Delete(AthleteId) {
+            var url = '@Url.Content("~/")' + "Edit/DeleteAthlete";
+
+            $.post(url, { athleteId: AthleteId }, function (data) {
+                ReloadCatalog();
+                });
+        }
+
+
+        function ReloadCatalog() {
+            let newurl = "/data/LoadAthletesTable";
+            oTable.ajax.url(newurl).load();
+
+        }
+
+    function EditData(Id, CountryId, SportId, FullName, BirthDate) {
+        let form = document.querySelector("#UpdateRecordLink");
+        form.id.value = Id;
+        form.countryId.value = CountryId;
+        form.sportId.value = SportId;
+        form.fullName.value = FullName;
+        let birthDate = new Date(BirthDate);
+        birthDate.setDate(birthDate.getDate() + 1);
+        form.birthDate.value = birthDate.toISOString().substr(0, 10);
+        let link = $('#ModalFormLink');
+        link.click();
+    }
+
+</script>
